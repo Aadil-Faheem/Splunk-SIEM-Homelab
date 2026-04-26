@@ -79,7 +79,7 @@ Configure the virtual network, assign static IPs, verify connectivity, and docum
 
 Install Splunk Enterprise on Windows 10, configure the Universal Forwarder, and verify log ingestion.
 
-### ./attack-simulation/checklist.md
+### [Phase 3 - Attack Simulation](./attack-simulation/checklist.md)
 
 Run attacks from Kali Linux, detect them in Splunk, and build dashboards.
 
