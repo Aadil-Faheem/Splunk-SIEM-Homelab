@@ -1,0 +1,177 @@
+<dashboard version="1.1">
+  <label>SIEM Lab — Attack Detection Dashboard</label>
+  <description>Detects brute force, port scans, persistence, and suspicious processes from the SIEM Home Lab</description>
+
+  <row>
+    <panel>
+      <title>Failed Login Attempts Over Time</title>
+      <chart>
+        <search>
+          <query>index=wineventlog EventCode=4625 | timechart span=5m count as "Failed Logins"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.chart.showDataLabels">minmax</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Failed Logins</option>
+        <option name="charting.seriesColors">[0xD93F3C]</option>
+      </chart>
+    </panel>
+
+    <panel>
+      <title>Successful vs Failed Logins</title>
+      <chart>
+        <search>
+          <query>index=wineventlog (EventCode=4624 OR EventCode=4625) | eval Status=if(EventCode=4624,"Success","Failure") | timechart span=5m count by Status</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.seriesColors">[0x53A051,0xD93F3C]</option>
+      </chart>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Brute Force Detection — 5+ Failures in 5 Minutes</title>
+      <table>
+        <search>
+          <query>index=wineventlog EventCode=4625 | bin _time span=5m | stats count as failures by _time, Account_Name, Workstation_Name | where failures >= 5 | sort -failures | rename _time as "Window", Account_Name as "Target Account", Workstation_Name as "Source", failures as "Failures in 5min"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="dataOverlayMode">heatmap</option>
+      </table>
+    </panel>
+
+    <panel>
+      <title>Account Lockouts</title>
+      <table>
+        <search>
+          <query>index=wineventlog EventCode=4740 | table _time, TargetUserName, SubjectUserName | sort -_time | rename _time as "Time", TargetUserName as "Locked Account", SubjectUserName as "Triggered By"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Top Targeted Accounts</title>
+      <chart>
+        <search>
+          <query>index=wineventlog EventCode=4625 | stats count by Account_Name | sort -count | head 10 | rename Account_Name as "Account", count as "Failed Attempts"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.seriesColors">[0xF7902B]</option>
+      </chart>
+    </panel>
+
+    <panel>
+      <title>Login Attempt Sources</title>
+      <chart>
+        <search>
+          <query>index=wineventlog EventCode=4625 | stats count by Workstation_Name | sort -count | head 10 | rename Workstation_Name as "Source Machine", count as "Failed Attempts"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">all</option>
+      </chart>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Suspicious Processes Created</title>
+      <table>
+        <search>
+          <query>index=wineventlog EventCode=4688 | where (New_Process_Name LIKE "%cmd.exe" OR New_Process_Name LIKE "%powershell.exe" OR New_Process_Name LIKE "%wscript.exe" OR New_Process_Name LIKE "%mshta.exe") | table _time, Account_Name, Creator_Process_Name, New_Process_Name, Process_Command_Line | sort -_time | head 20</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>New Services Installed (Potential Persistence)</title>
+      <table>
+        <search>
+          <query>index=wineventlog EventCode=7045 | table _time, ServiceName, ServiceFileName, ServiceType, AccountName | sort -_time | rename ServiceName as "Service", ServiceFileName as "Executable", AccountName as "Account"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+      </table>
+    </panel>
+
+    <panel>
+      <title>New User Accounts Created</title>
+      <table>
+        <search>
+          <query>index=wineventlog EventCode=4720 | table _time, TargetUserName, SubjectUserName | sort -_time | rename TargetUserName as "New Account", SubjectUserName as "Created By"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Port Scan Detection (WFP Events — Unique Ports per Source)</title>
+      <table>
+        <search>
+          <query>index=wineventlog (EventCode=5156 OR EventCode=5157) | rex field=Source_Address "(?P&lt;src_ip&gt;\d+\.\d+\.\d+\.\d+)" | stats dc(Dest_Port) as unique_ports, count as total_conn by src_ip | where unique_ports > 20 | sort -unique_ports | rename src_ip as "Source IP", unique_ports as "Unique Ports Scanned", total_conn as "Total Connections"</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="dataOverlayMode">heatmap</option>
+      </table>
+    </panel>
+
+    <panel>
+      <title>Log Clearing Events (Critical Alert)</title>
+      <table>
+        <search>
+          <query>index=wineventlog (EventCode=1102 OR EventCode=104) | table _time, host, EventCode, SubjectUserName, Message | sort -_time | rename SubjectUserName as "Cleared By"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <title>Full Attack Kill Chain Timeline</title>
+      <table>
+        <search>
+          <query>index=wineventlog (EventCode=4625 OR EventCode=4624 OR EventCode=4688 OR EventCode=7045 OR EventCode=4720 OR EventCode=4698 OR EventCode=4740) | eval Event_Description=case(EventCode=4625,"Failed Login",EventCode=4624,"Successful Login",EventCode=4688,"Process Created",EventCode=7045,"Service Installed",EventCode=4720,"User Created",EventCode=4698,"Scheduled Task",EventCode=4740,"Account Lockout",true(),"Other") | table _time, EventCode, Event_Description, Account_Name, host | sort _time</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+
+</dashboard>
