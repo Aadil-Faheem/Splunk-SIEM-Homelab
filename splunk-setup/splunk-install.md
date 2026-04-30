@@ -4,7 +4,7 @@
 
 Splunk Enterprise is the core of this lab. It acts as both the **indexer** (stores and parses log data) and the **search head** (provides the web UI for searching). It runs as a Windows service on the Windows 10 VM.
 
-![splunkinstall.png](/home/lzy/Documents/GitHub/Splunk-SIEM-Homelab/screenshots/phase2/splunkinstall.png)
+![splunkinstall.png](../screenshots/phase2/splunkinstall.png)
 
 ---
 
