@@ -77,7 +77,7 @@ ip a show eth0
 nmcli connection show "Wired connection 1" | grep ipv4
 ```
 
-![kali_ip.png](/home/lzy/Documents/GitHub/Splunk-SIEM-Homelab/screenshots/phase1/kali_ip.png)
+![kali_ip.png](../screenshots/phase1/kali_ip.png)
 
 ---
 
@@ -99,7 +99,7 @@ nmcli connection show "Wired connection 1" | grep ipv4
    
    
    
-   <img src="file:///home/lzy/Documents/GitHub/Splunk-SIEM-Homelab/screenshots/phase1/windows_ip.png" title="" alt="windows_ip.png" width="370">
+   <img src="../screenshots/phase1/windows_ip.png" title="" alt="windows_ip.png" width="370">
 
 ---
 
