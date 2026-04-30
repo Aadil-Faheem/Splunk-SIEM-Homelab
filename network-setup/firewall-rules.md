@@ -115,7 +115,7 @@ nmap -p 8000,8088,9997 192.168.0.123
 
 ## Screenshots
 
-![windows_firewall.png](/home/lzy/Documents/GitHub/Splunk-SIEM-Homelab/screenshots/phase1/windows_firewall.png)
+![windows_firewall.png](../screenshots/phase1/windows_firewall.png)
 
 ---
 
