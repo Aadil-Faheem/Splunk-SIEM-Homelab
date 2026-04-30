@@ -13,7 +13,7 @@
 
 ## Network Diagram
 
-![network_diagram.png](/home/lzy/Documents/GitHub/Splunk-SIEM-Homelab/screenshots/phase1/network_diagram.png)
+![network_diagram.png](../screenshots/phase1/network_diagram.png)
 
 
 
