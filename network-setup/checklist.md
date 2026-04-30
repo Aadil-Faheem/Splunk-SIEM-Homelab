@@ -34,7 +34,7 @@ This phase ensures that all three machines (Host, Kali VM, Windows 10 VM) can co
 
 ## 🌐 Network Overview
 
-![network_diagram.png](/home/lzy/Documents/GitHub/Splunk-SIEM-Homelab/screenshots/phase1/network_diagram.png)
+![network_diagram.png](../screenshots/phase1/network_diagram.png)
 
 
 
